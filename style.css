@@ -1,0 +1,249 @@
+/* style.css */
+
+:root {
+  --primary-color: #8f4605;
+  --secondary-color: #f5f5f5;
+  --accent-color: #002d5a;
+  --text-color: #000000;
+  --border-radius: 12px;
+  --delete-color: #e74c3c;
+  --font-family: "Segoe UI", sans-serif;
+}
+
+body {
+  font-family: var(--font-family);
+  margin: 0;
+  padding: 0;
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+}
+
+nav {
+  display: flex;
+  background: var(--primary-color);
+  padding: 1rem;
+  justify-content: space-around;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+nav button {
+  background: white;
+  border: none;
+  border-radius: var(--border-radius);
+  padding: 0.6rem 1.2rem;
+  font-weight: bold;
+  color: var(--primary-color);
+  cursor: pointer;
+  transition: background 0.3s;
+  font-size: 1rem;
+}
+
+nav button:hover {
+  background: #ffd8bb;
+}
+
+.screen {
+  display: none;
+  padding: 2rem 1rem;
+  max-width: 600px;
+  margin: auto;
+}
+
+.active {
+  display: block;
+}
+
+h2 {
+  margin-top: 0;
+  color: var(--accent-color);
+  font-size: 1.6rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+input, button {
+  padding: 0.7rem;
+  margin: 0.5rem 0;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  font-family: var(--font-family);
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+li {
+  background: white;
+  border-radius: var(--border-radius);
+  margin-bottom: 0.5rem;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  user-select: none;
+}
+
+/* 会計画面 */
+.yakitori-types {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.yakitori-types div {
+  background: white;
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  font-size: 1.3rem;
+  font-weight: 600;
+  user-select: none;
+}
+
+.yakitori-types span {
+  display: inline-block;
+  min-width: 2em;
+  font-weight: bold;
+  margin: 0 0.3rem;
+  font-size: 1.6rem;
+}
+
+#cashier p {
+  font-size: 1.3rem;
+  text-align: center;
+  margin-top: 0.5rem;
+  font-weight: 600;
+  user-select: none;
+}
+
+#inventory ul li {
+  font-size: 1.1rem;
+  padding: 0.7rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#inventory button {
+  width: auto;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s;
+  user-select: none;
+}
+#inventory button:hover {
+  background: #a06911;
+}
+
+/* 受け渡しリスト */
+#delivery ul {
+  padding-left: 0;
+  margin: 0;
+}
+#delivery ul li {
+  padding: 0.75rem 1rem;
+  background: white;
+  margin-bottom: 0.6rem;
+  border-radius: var(--border-radius);
+  font-size: 1.1rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  user-select: none;
+  justify-content: flex-start;
+}
+#delivery ul li label {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  user-select: text;
+}
+#delivery ul li input[type="checkbox"] {
+  margin: 0;
+  padding: 0;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  flex-shrink: 0;
+  user-select: none;
+}
+/* 受け渡しは注文日時非表示のため注文情報だけ */
+.order-text-delivery {
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: var(--primary-color);
+  user-select: text;
+}
+.order-id {
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: var(--accent-color);
+  width: 40px;
+  user-select: none;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+/* 販売記録は表形式に */
+#log table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+#log th, #log td {
+  padding: 0.75rem 1rem;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+  font-size: 1.1rem;
+  user-select: text;
+}
+#log thead {
+  background: var(--primary-color);
+  color: white;
+  font-weight: 700;
+  user-select: none;
+}
+#log tbody tr:last-child td {
+  border-bottom: none;
+}
+#log td .delete-button {
+  font-size: 1.2rem;
+  padding: 0;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  color: var(--delete-color);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.25s ease;
+  user-select: none;
+}
+#log td .delete-button:hover {
+  color: #b03020;
+  background: rgba(231, 76, 60, 0.15);
+}
