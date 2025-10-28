@@ -10,30 +10,30 @@
 <%-- 在庫追加処理 --%>
 <c:if test="${param.addStock == 'true'}">
     <sql:update dataSource="${dataSource}">
-        UPDATE tori_stock SET stock = stock + 200 WHERE product_id = ?
+        UPDATE TORI_STOCK SET STOCK = STOCK + 200 WHERE PRODUCT_ID = ?
     <sql:param value="${param.productId}" />
     </sql:update>
-    <c:redirect url="index.jsp?screen=stock" />
+    <c:redirect url="index.jsp" />
 </c:if>
 
-<%-- 注文受け渡し処理 --%>
+<%-- 注文受け渡し処理: ログを削除して「済」とする --%>
 <c:if test="${param.completeOrder == 'true'}">
     <sql:update dataSource="${dataSource}">
-        UPDATE tori_orders SET status = 'completed' WHERE order_id = ?
-    <sql:param value="${param.orderId}" />
+        DELETE FROM TORI_LOGS WHERE LOG_ID = ?
+    <sql:param value="${param.logId}" />
     </sql:update>
-    <c:redirect url="index.jsp?screen=delivery" />
+    <c:redirect url="index.jsp" />
 </c:if>
 
 <%-- 注文確定処理 --%>
 <c:if test="${param.submitOrder == 'true'}">
     <c:set var="outOfStock" value="false" />
     <sql:query var="productsDataCheck" dataSource="${dataSource}">
-        SELECT p.product_id, p.name, p.price, s.stock
-        FROM tori_products p LEFT JOIN tori_stock s ON p.product_id = s.product_id
+        SELECT P.PRODUCT_ID, P.NAME, P.PRICE, S.STOCK
+        FROM TORI_PRODUCTS P LEFT JOIN TORI_STOCK S ON P.PRODUCT_ID = S.PRODUCT_ID
     </sql:query>
     <c:forEach var="product" items="${productsDataCheck.rows}">
-        <c:if test="${param[product.name] > product.stock}">
+        <c:if test="${param[fn:toLowerCase(product.name)] > product.stock}">
             <c:set var="outOfStock" value="true" />
         </c:if>
     </c:forEach>
@@ -44,31 +44,21 @@
         </c:when>
         <c:otherwise>
             <sql:update dataSource="${dataSource}">
-                INSERT INTO tori_orders (order_number, total_price, payment_amount, change_amount, status)
-                VALUES (?, ?, ?, ?, 'pending')
-            <sql:param value="${param.orderNumber}" />
+                INSERT INTO TORI_LOGS (LOG_TIME, MOMO_COUNT, KAWA_COUNT, NEGIMA_COUNT, TOTAL_COUNT, PRICE, TICKET_NO)
+                VALUES (NOW(), ?, ?, ?, ?, ?, ?)
+            <sql:param value="${param.momo}" />
+            <sql:param value="${param.皮}" />
+            <sql:param value="${param.ネギま}" />
+            <sql:param value="${param.totalCount}" />
             <sql:param value="${param.totalPrice}" />
-            <sql:param value="${param.paymentAmount}" />
-            <sql:param value="${param.changeAmount}" />
+            <sql:param value="${param.orderNumber}" />
             </sql:update>
-            
-            <sql:query var="newOrderId" dataSource="${dataSource}">
-                SELECT IDENTITY() AS id
-            </sql:query>
-            <c:set var="currentOrderId" value="${newOrderId.rows[0].id}" />
 
             <c:forEach var="product" items="${productsDataCheck.rows}">
-                <c:if test="${param[product.name] > 0}">
+                <c:if test="${param[fn:toLowerCase(product.name)] > 0}">
                     <sql:update dataSource="${dataSource}">
-                        INSERT INTO tori_order_details (order_id, product_id, quantity)
-                        VALUES (?, ?, ?)                   
-                    <sql:param value="${currentOrderId}" />
-                    <sql:param value="${product.product_id}" />
-                    <sql:param value="${param[product.name]}" />
-                    </sql:update>
-                    <sql:update dataSource="${dataSource}">
-                        UPDATE tori_stock SET stock = stock - ? WHERE product_id = ?
-                    <sql:param value="${param[product.name]}" />
+                        UPDATE TORI_STOCK SET STOCK = STOCK - ? WHERE PRODUCT_ID = ?
+                    <sql:param value="${param[fn:toLowerCase(product.name)]}" />
                     <sql:param value="${product.product_id}" />
                     </sql:update>
                 </c:if>
@@ -80,206 +70,233 @@
 
 <%-- データの取得 --%>
 <sql:query var="productsData" dataSource="${dataSource}">
-    SELECT p.product_id, p.name, p.price, s.stock
-    FROM tori_products p LEFT JOIN tori_stock s ON p.product_id = s.product_id
+    SELECT P.PRODUCT_ID, P.NAME, P.PRICE, S.STOCK
+    FROM TORI_PRODUCTS P LEFT JOIN TORI_STOCK S ON P.PRODUCT_ID = S.PRODUCT_ID
+    ORDER BY P.PRODUCT_ID ASC
 </sql:query>
 
 <sql:query var="pendingOrders" dataSource="${dataSource}">
-    SELECT o.order_id, o.order_number, d.quantity, p.name
-    FROM tori_orders o
-    JOIN tori_order_details d ON o.order_id = d.order_id
-    JOIN tori_products p ON d.product_id = p.product_id
-    WHERE o.status = 'pending'
-    ORDER BY o.ordered_at ASC
-</sql:query>
-
-<sql:query var="salesLog" dataSource="${dataSource}">
-    SELECT o.order_number, o.total_price, o.ordered_at, d.quantity, p.name
-    FROM tori_orders o
-    JOIN tori_order_details d ON o.order_id = d.order_id
-    JOIN tori_products p ON d.product_id = p.product_id
-    ORDER BY o.ordered_at DESC
+    SELECT LOG_ID, TICKET_NO, MOMO_COUNT, KAWA_COUNT, NEGIMA_COUNT FROM TORI_LOGS ORDER BY LOG_TIME ASC
 </sql:query>
 
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>焼き鳥POSシステム（学園祭）</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>焼き鳥レジシステム</title>
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-<nav>
-  <button onclick="switchScreen('cashier')">会計</button>
-  <button onclick="switchScreen('stock')">在庫</button>
-  <button onclick="switchScreen('delivery')">受け渡し</button>
-  <button onclick="switchScreen('log')">販売記録</button>
-</nav>
-
-<div class="screen active" id="cashier">
-  <form action="index.jsp" method="get" onsubmit="return submitOrder();">
-    <h2>会計処理</h2>
-    <div class="yakitori-types">
-      <c:forEach var="product" items="${productsData.rows}">
-        <div>
-          ${product.name}<br />
-          <button type="button" onclick="changeCount('${product.name}', -1)">−</button>
-          <span id="${product.name}Count">0</span>
-          <button type="button" onclick="changeCount('${product.name}', 1)">＋</button>
+    <div class="container">
+        <div class="left">
+            <div class="top">
+                <h2 class="section-title">会計</h2>
+                <form action="index.jsp" method="post" onsubmit="return submitOrder();">
+                    <div class="yakitori-table">
+                        <div class="yakitori-row" data-price="150" data-name="もも">
+                            <h3 class="item-name">もも</h3>
+                            <div class="counter">
+                                <button type="button" class="count-btn" data-action="minus">−</button>
+                                <span class="count" id="momoCount">0</span>
+                                <button type="button" class="count-btn" data-action="plus">＋</button>
+                            </div>
+                        </div>
+                        <div class="yakitori-row" data-price="150" data-name="皮">
+                            <h3 class="item-name">皮</h3>
+                            <div class="counter">
+                                <button type="button" class="count-btn" data-action="minus">−</button>
+                                <span class="count" id="皮Count">0</span>
+                                <button type="button" class="count-btn" data-action="plus">＋</button>
+                            </div>
+                        </div>
+                        <div class="yakitori-row" data-price="150" data-name="ネギま">
+                            <h3 class="item-name">ネギま</h3>
+                            <div class="counter">
+                                <button type="button" class="count-btn" data-action="minus">−</button>
+                                <span class="count" id="ネギまCount">0</span>
+                                <button type="button" class="count-btn" data-action="plus">＋</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="totalAmount" class="total-display">合計金額: ¥0</div>
+                    <div class="checkout-actions">
+                        <label for="orderNumberInput">整理券番号:</label>
+                        <input type="number" id="orderNumberInput" name="orderNumber" required />
+                        <button type="submit" class="submit-button">注文確定</button>
+                    </div>
+                    <input type="hidden" name="submitOrder" value="true" />
+                </form>
+            </div>
+            <div class="bottom">
+                <h2 class="section-title">在庫</h2>
+                <div class="stock-table">
+                    <div class="table-header">
+                        <div class="cell">種類</div>
+                        <div class="cell">現状</div>
+                        <div class="cell">追加</div>
+                    </div>
+                    <c:forEach var="product" items="${productsData.rows}">
+                        <div class="stock-row">
+                            <div class="cell">${product.name}</div>
+                            <div class="cell">
+                                <span class="current-stock" id="stock${product.product_id}">${product.stock}</span> 本
+                            </div>
+                            <a href="index.jsp?addStock=true&productId=${product.product_id}" class="cell add-stock-btn">+200</a>
+                        </div>
+                    </c:forEach>
+                </div>
+            </div>
         </div>
-      </c:forEach>
+        <div class="right">
+            <h2 class="section-title">受け渡し</h2>
+            <div class="delivery-table">
+                <div class="table-header">
+                    <div class="cell">番号</div>
+                    <div class="cell">注文内容</div>
+                    <div class="cell">提供</div>
+                </div>
+                <div class="table-body">
+                    <c:forEach var="order" items="${pendingOrders.rows}">
+                        <div class="delivery-row">
+                            <div class="cell">${order.ticket_no}</div>
+                            <div class="cell content-cell">
+                                <c:set var="yakitori_counts" value="" />
+                                <c:if test="${order.momo_count > 0}">
+                                    <c:set var="yakitori_counts" value="${yakitori_counts}もも: ${order.momo_count}本" />
+                                </c:if>
+                                <c:if test="${order.kawa_count > 0}">
+                                    <c:if test="${fn:length(yakitori_counts) > 0}">
+                                        <c:set var="yakitori_counts" value="${yakitori_counts}, " />
+                                    </c:if>
+                                    <c:set var="yakitori_counts" value="${yakitori_counts}皮: ${order.kawa_count}本" />
+                                </c:if>
+                                <c:if test="${order.negima_count > 0}">
+                                    <c:if test="${fn:length(yakitori_counts) > 0}">
+                                        <c:set var="yakitori_counts" value="${yakitori_counts}, " />
+                                    </c:if>
+                                    <c:set var="yakitori_counts" value="${yakitori_counts}ネギま: ${order.negima_count}本" />
+                                </c:if>
+                                ${yakitori_counts}
+                            </div>
+                            <div class="cell action-cell">
+                                <button class="deliver-btn" onclick="completeOrder(${order.log_id})">×</button>
+                            </div>
+                        </div>
+                    </c:forEach>
+                </div>
+            </div>
+        </div>
     </div>
-    <p id="totalDisplay">合計金額: ¥0</p>
-    <label for="paymentInput">お預かり金額:</label>
-    <input type="number" id="paymentInput" name="paymentAmount" min="0" />
-    <p id="changeDisplay">お釣り: ¥0</p>
-    <button type="submit">注文確定</button>
-  </form>
-</div>
+    <script>
+        const counts = {
+            'もも': 0,
+            '皮': 0,
+            'ネギま': 0
+        };
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const yakitoriItems = document.querySelectorAll('.yakitori-row');
+            yakitoriItems.forEach(item => {
+                const name = item.dataset.name;
+                const countSpan = item.querySelector('.count');
+                const plusBtn = item.querySelector('[data-action="plus"]');
+                const minusBtn = item.querySelector('[data-action="minus"]');
+    
+                plusBtn.addEventListener('click', () => {
+                    counts[name]++;
+                    countSpan.textContent = counts[name];
+                    updateTotalPrice();
+                });
+    
+                minusBtn.addEventListener('click', () => {
+                    if (counts[name] > 0) {
+                        counts[name]--;
+                        countSpan.textContent = counts[name];
+                        updateTotalPrice();
+                    }
+                });
+            });
 
-<div class="screen" id="stock">
-  <h2>在庫管理</h2>
-  <ul>
-    <c:forEach var="product" items="${productsData.rows}">
-      <li>
-        ${product.name}：<span id="stock${product.name}">${product.stock}</span>本
-        <a href="index.jsp?addStock=true&productId=${product.product_id}">+200追加</a>
-      </li>
-    </c:forEach>
-  </ul>
-</div>
+            updateTotalPrice();
 
-<div class="screen" id="delivery">
-  <h2>受け渡し</h2>
-  <ul id="orderList">
-    <c:forEach var="order" items="${pendingOrders.rows}">
-      <li>
-        <span class="order-id">${order.order_number}</span>
-        <label>
-          <input type="checkbox" onchange="completeOrder(${order.order_id}, this)" />
-          <span>${order.name}:${order.quantity}本</span>
-        </label>
-      </li>
-    </c:forEach>
-  </ul>
-</div>
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('status') === 'stock_error') {
+                alert("在庫が不足しています。注文内容を確認してください。");
+            }
+        });
 
-<div class="screen" id="log">
-  <h2>販売記録</h2>
-  <table id="logTable">
-    <thead>
-      <tr>
-        <th>整理番号</th>
-        <th>注文内容</th>
-        <th>注文時刻</th>
-      </tr>
-    </thead>
-    <tbody id="logList">
-      <c:forEach var="log" items="${salesLog.rows}">
-        <tr>
-          <td>${log.order_number}</td>
-          <td>${log.name}:${log.quantity}本</td>
-          <td><fmt:formatDate value="${log.ordered_at}" pattern="HH:mm:ss" /></td>
-        </tr>
-      </c:forEach>
-    </tbody>
-  </table>
-</div>
+        function updateTotalPrice() {
+            let totalCount = counts['もも'] + counts['皮'] + counts['ネギま'];
+            
+            const setPrice = 600;
+            const singlePrice = 150;
+    
+            const sets = Math.floor(totalCount / 5);
+            const remaining = totalCount % 5;
+    
+            const totalPrice = (sets * setPrice) + (remaining * singlePrice);
+            document.getElementById('totalAmount').textContent = `合計金額: ¥${totalPrice}`;
+        }
+    
+        function submitOrder() {
+            const orderNumber = document.getElementById("orderNumberInput").value;
+            if (!orderNumber) {
+                alert("整理券番号を入力してください。");
+                return false;
+            }
+    
+            let totalItems = counts['もも'] + counts['皮'] + counts['ネギま'];
+            if (totalItems === 0) {
+                alert("注文する商品を選択してください。");
+                return false;
+            }
 
-<script>
-  let momo = 0, kawa = 0, negima = 0;
+            const sets = Math.floor(totalItems / 5);
+            const remaining = totalItems % 5;
+            const totalPrice = (sets * 600) + (remaining * 150);
+            
+            const form = document.querySelector('form');
+    
+            const momoInput = document.createElement('input');
+            momoInput.type = 'hidden';
+            momoInput.name = 'momo';
+            momoInput.value = counts['もも'];
+            form.appendChild(momoInput);
 
-  function switchScreen(id) {
-    document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    history.pushState(null, '', `?screen=${id}`);
-  }
+            const kawaInput = document.createElement('input');
+            kawaInput.type = 'hidden';
+            kawaInput.name = '皮';
+            kawaInput.value = counts['皮'];
+            form.appendChild(kawaInput);
 
-  function changeCount(type, delta) {
-    if (type === 'momo') momo = Math.max(0, momo + delta);
-    if (type === 'kawa') kawa = Math.max(0, kawa + delta);
-    if (type === 'negima') negima = Math.max(0, negima + delta);
-    updateCounts();
-  }
+            const negimaInput = document.createElement('input');
+            negimaInput.type = 'hidden';
+            negimaInput.name = 'ネギま';
+            negimaInput.value = counts['ネギま'];
+            form.appendChild(negimaInput);
+    
+            const priceInput = document.createElement('input');
+            priceInput.type = 'hidden';
+            priceInput.name = 'totalPrice';
+            priceInput.value = totalPrice;
+            form.appendChild(priceInput);
 
-  function updateCounts() {
-    document.getElementById("momoCount").textContent = momo;
-    document.getElementById("kawaCount").textContent = kawa;
-    document.getElementById("negimaCount").textContent = negima;
-    const total = calculatePrice(momo + kawa + negima);
-    document.getElementById("totalDisplay").textContent = `合計金額: ¥${total}`;
-    updateChangeDisplay();
-  }
-
-  function calculatePrice(totalCount) {
-    const setPrice = 700;
-    const singlePrice = 200;
-    const sets = Math.floor(totalCount / 5);
-    const remaining = totalCount % 5;
-    return sets * setPrice + remaining * singlePrice;
-  }
-
-  function updateChangeDisplay() {
-    const total = calculatePrice(momo + kawa + negima);
-    const paid = parseInt(document.getElementById("paymentInput").value) || 0;
-    const change = paid - total;
-    document.getElementById("changeDisplay").textContent = `お釣り: ¥${change}`;
-  }
-
-  function submitOrder() {
-    const totalCount = momo + kawa + negima;
-    const paid = parseInt(document.getElementById("paymentInput").value);
-    if (!totalCount || !paid) {
-      alert("本数と金額を入力してください");
-      return false;
-    }
-
-    const price = calculatePrice(totalCount);
-    const change = paid - price;
-    const form = document.querySelector('#cashier form');
-
-    const hiddenInputs = {
-      momo: momo,
-      kawa: kawa,
-      negima: negima,
-      totalPrice: price,
-      changeAmount: change,
-      orderNumber: Math.floor(Math.random() * 10000),
-      submitOrder: 'true'
-    };
-
-    for (const key in hiddenInputs) {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = key;
-      input.value = hiddenInputs[key];
-      form.appendChild(input);
-    }
-
-    alert(`注文完了\nお釣り: ¥${change}`);
-    return true;
-  }
-
-  function completeOrder(orderId, checkbox) {
-    if (checkbox.checked && confirm("受け渡しを完了しますか？")) {
-      window.location.href = `index.jsp?completeOrder=true&orderId=${orderId}`;
-    } else {
-      checkbox.checked = false;
-    }
-  }
-
-  document.getElementById("paymentInput").addEventListener("input", updateChangeDisplay);
-
-  document.addEventListener('DOMContentLoaded', () => {
-    updateCounts();
-    const urlParams = new URLSearchParams(window.location.search);
-    const currentScreen = urlParams.get('screen') || 'cashier';
-    switchScreen(currentScreen);
-    if (urlParams.get('status') === 'stock_error') {
-      alert("在庫が不足しています。");
-    }
-  });
-</script>
+            const totalCountInput = document.createElement('input');
+            totalCountInput.type = 'hidden';
+            totalCountInput.name = 'totalCount';
+            totalCountInput.value = totalItems;
+            form.appendChild(totalCountInput);
+    
+            alert(`注文番号: ${orderNumber}\n合計金額: ¥${totalPrice}\n注文を確定します。`);
+            return true;
+        }
+    
+        function completeOrder(logId) {
+            if (confirm("この注文の受け渡しを完了しますか？")) {
+                window.location.href = `index.jsp?completeOrder=true&logId=${logId}`;
+            }
+        }
+    </script>
 </body>
 </html>
