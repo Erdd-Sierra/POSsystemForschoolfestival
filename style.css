@@ -1,249 +1,263 @@
 /* style.css */
-
-:root {
-  --primary-color: #8f4605;
-  --secondary-color: #f5f5f5;
-  --accent-color: #002d5a;
-  --text-color: #000000;
-  --border-radius: 12px;
-  --delete-color: #e74c3c;
-  --font-family: "Segoe UI", sans-serif;
+/* ページ全体の基本設定 */
+body, html {
+    height: 100%;
+    margin: 0;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+    background-color: #f7f3f0;
+    color: #333;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    font-size: 16px;
 }
 
-body {
-  font-family: var(--font-family);
-  margin: 0;
-  padding: 0;
-  background-color: var(--secondary-color);
-  color: var(--text-color);
+/* 全体を横並びにするコンテナ */
+.container {
+    display: flex;
+    height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+    gap: 20px;
 }
 
-nav {
-  display: flex;
-  background: var(--primary-color);
-  padding: 1rem;
-  justify-content: space-around;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+/* 左側（上と下を含む領域） */
+.left {
+    display: flex;
+    flex-direction: column;
+    flex: 3;
+    gap: 20px;
 }
 
-nav button {
-  background: white;
-  border: none;
-  border-radius: var(--border-radius);
-  padding: 0.6rem 1.2rem;
-  font-weight: bold;
-  color: var(--primary-color);
-  cursor: pointer;
-  transition: background 0.3s;
-  font-size: 1rem;
+/* 上の大きな面 (会計) */
+.top {
+    flex: 3;
+    background: #ffffff;
+    border: 1px solid #ccc;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-nav button:hover {
-  background: #ffd8bb;
+/* 下の横長の面 (在庫) */
+.bottom {
+    flex: 1;
+    background: #ffffff;
+    border: 1px solid #ccc;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.screen {
-  display: none;
-  padding: 2rem 1rem;
-  max-width: 600px;
-  margin: auto;
+/* 右の縦長の面 (受け渡し) */
+.right {
+    flex: 1;
+    background: #ffffff;
+    border: 1px solid #ccc;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.active {
-  display: block;
+.section-title {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #8f4605;
+    border-bottom: 2px solid #f0e6da;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    text-align: center;
 }
 
-h2 {
-  margin-top: 0;
-  color: var(--accent-color);
-  font-size: 1.6rem;
-  text-align: center;
-  margin-bottom: 1.5rem;
+/* 全てのテーブルに適用する共通スタイル */
+.yakitori-table, .stock-table, .delivery-table {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 20px;
 }
 
-input, button {
-  padding: 0.7rem;
-  margin: 0.5rem 0;
-  width: 100%;
-  box-sizing: border-box;
-  border: 1px solid #ccc;
-  border-radius: var(--border-radius);
-  font-size: 1rem;
-  font-family: var(--font-family);
+.table-header {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    background: #f0f0f0;
+    font-weight: bold;
+    color: #555;
+    text-align: center;
 }
 
-ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+/* 会計テーブルの列幅を調整 */
+.yakitori-table {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    border: none;
+    margin-bottom: 0;
 }
 
-li {
-  background: white;
-  border-radius: var(--border-radius);
-  margin-bottom: 0.5rem;
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.07);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  user-select: none;
+.yakitori-row {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-/* 会計画面 */
-.yakitori-types {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  text-align: center;
-  margin-bottom: 1.5rem;
+.item-name {
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 15px;
 }
 
-.yakitori-types div {
-  background: white;
-  border-radius: var(--border-radius);
-  padding: 1rem;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-  font-size: 1.3rem;
-  font-weight: 600;
-  user-select: none;
+.yakitori-row .counter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-top: auto;
 }
 
-.yakitori-types span {
-  display: inline-block;
-  min-width: 2em;
-  font-weight: bold;
-  margin: 0 0.3rem;
-  font-size: 1.6rem;
+.count-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 1.5rem;
+    border: none;
+    border-radius: 50%;
+    background: #f0e6da;
+    color: #8f4605;
+    cursor: pointer;
 }
 
-#cashier p {
-  font-size: 1.3rem;
-  text-align: center;
-  margin-top: 0.5rem;
-  font-weight: 600;
-  user-select: none;
+.count {
+    font-size: 2rem;
+    font-weight: 700;
 }
 
-#inventory ul li {
-  font-size: 1.1rem;
-  padding: 0.7rem 1rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.total-display {
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-align: center;
+    color: #002d5a;
+    padding: 10px;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+    margin: 15px 0;
 }
 
-#inventory button {
-  width: auto;
-  padding: 0.4rem 0.8rem;
-  font-size: 0.9rem;
-  border-radius: 8px;
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  cursor: pointer;
-  transition: background 0.3s;
-  user-select: none;
-}
-#inventory button:hover {
-  background: #a06911;
+.checkout-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: 20px;
 }
 
-/* 受け渡しリスト */
-#delivery ul {
-  padding-left: 0;
-  margin: 0;
-}
-#delivery ul li {
-  padding: 0.75rem 1rem;
-  background: white;
-  margin-bottom: 0.6rem;
-  border-radius: var(--border-radius);
-  font-size: 1.1rem;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  user-select: none;
-  justify-content: flex-start;
-}
-#delivery ul li label {
-  flex-grow: 1;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  user-select: text;
-}
-#delivery ul li input[type="checkbox"] {
-  margin: 0;
-  padding: 0;
-  width: 22px;
-  height: 22px;
-  cursor: pointer;
-  flex-shrink: 0;
-  user-select: none;
-}
-/* 受け渡しは注文日時非表示のため注文情報だけ */
-.order-text-delivery {
-  font-weight: 700;
-  font-size: 1.3rem;
-  color: var(--primary-color);
-  user-select: text;
-}
-.order-id {
-  font-weight: 700;
-  font-size: 1.2rem;
-  color: var(--accent-color);
-  width: 40px;
-  user-select: none;
-  flex-shrink: 0;
-  text-align: center;
+.checkout-actions label {
+    font-weight: bold;
+    white-space: nowrap;
 }
 
-/* 販売記録は表形式に */
-#log table {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-  border-radius: var(--border-radius);
-  overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+.checkout-actions input {
+    flex: 1;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    text-align: center;
 }
-#log th, #log td {
-  padding: 0.75rem 1rem;
-  text-align: center;
-  border-bottom: 1px solid #ddd;
-  font-size: 1.1rem;
-  user-select: text;
+
+.submit-button {
+    padding: 10px 20px;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+    background: #8f4605;
+    color: white;
+    font-weight: bold;
 }
-#log thead {
-  background: var(--primary-color);
-  color: white;
-  font-weight: 700;
-  user-select: none;
+
+/* 在庫テーブル */
+.stock-table {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 20px;
 }
-#log tbody tr:last-child td {
-  border-bottom: none;
+
+.stock-table .table-header {
+    grid-template-columns: 1fr 1fr 1fr;
 }
-#log td .delete-button {
-  font-size: 1.2rem;
-  padding: 0;
-  width: 28px;
-  height: 28px;
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  border-radius: 50%;
-  color: var(--delete-color);
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: color 0.25s ease;
-  user-select: none;
+
+.stock-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: center;
+    border-bottom: 1px solid #eee;
 }
-#log td .delete-button:hover {
-  color: #b03020;
-  background: rgba(231, 76, 60, 0.15);
+
+.stock-row:last-child {
+    border-bottom: none;
+}
+
+.cell {
+    padding: 12px 8px;
+    border-right: 1px solid #eee;
+    text-align: center;
+}
+
+.table-header .cell {
+    border-bottom: 1px solid #ddd;
+}
+
+.stock-row .cell {
+    font-size: 1rem;
+}
+
+.add-stock-btn {
+    display: block;
+    text-decoration: none;
+    color: white;
+    background: #002d5a;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-weight: bold;
+}
+
+/* 受け渡しテーブル */
+.delivery-table .table-body {
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
+.delivery-table .table-header {
+    grid-template-columns: 0.8fr 2fr 1fr;
+}
+
+.delivery-row {
+    display: grid;
+    grid-template-columns: 0.8fr 2fr 1fr;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+}
+
+.delivery-row:last-child {
+    border-bottom: none;
+}
+
+.content-cell {
+    font-size: 0.9rem;
+    text-align: left;
+}
+
+.action-cell {
+    text-align: center;
+}
+
+.deliver-btn {
+    border: none;
+    background: transparent;
+    font-size: 1.5rem;
+    color: #e74c3c;
+    cursor: pointer;
 }
