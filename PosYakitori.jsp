@@ -98,7 +98,7 @@
 <head>
     <meta charset="UTF-8">
     <title>焼き鳥レジシステム</title>
-    <link rel="stylesheet" href="test5.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="container">
@@ -238,3 +238,4 @@ function markDone(button) {
 </script>
 </body>
 </html>
+
